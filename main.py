@@ -14,7 +14,6 @@ from fastapi.responses import JSONResponse
 import uvicorn
 import aiohttp
 from bs4 import BeautifulSoup
-import pandas as pd
 import numpy as np
 from textblob import TextBlob
 
