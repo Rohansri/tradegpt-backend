@@ -1,0 +1,7 @@
+fastapi==0.115.0
+uvicorn==0.32.0
+numpy==2.1.2
+aiohttp==3.10.10
+beautifulsoup4==4.12.3
+textblob==0.19.0
+lxml==5.3.0
