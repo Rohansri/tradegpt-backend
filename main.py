@@ -5,13 +5,17 @@ Uses: OpenAI GPT-4, Real Web Search, NSE India, Yahoo Finance, MoneyControl, Eco
 
 import asyncio
 import json
+import logging
 import os
 import re
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Query
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 import uvicorn
 import aiohttp
 from bs4 import BeautifulSoup
@@ -19,25 +23,60 @@ import numpy as np
 from textblob import TextBlob
 import openai
 
+logger = logging.getLogger(__name__)
+
 # OpenAI API Key from environment
 openai.api_key = os.getenv("OPENAI_API_KEY", "")
 
-app = FastAPI(title="TradeGPT API - ULTIMATE", version="4.0.0")
+# ============== RATE LIMITER ==============
+limiter = Limiter(key_func=get_remote_address)
 
-# CORS for frontend
+app = FastAPI(title="TradeGPT API - ULTIMATE", version="4.0.0")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# ============== CORS ==============
+# Restrict origins - set ALLOWED_ORIGINS env var as comma-separated list, e.g. "https://yourfrontend.com"
+_raw_origins = os.getenv("ALLOWED_ORIGINS", "")
+allowed_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()] or ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=allowed_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Accept"],
 )
 
+# ============== INPUT VALIDATION ==============
+
+# Valid stock symbols: uppercase alphanumerics, &, -, up to 20 chars
+_SYMBOL_RE = re.compile(r'^[A-Z0-9&\-]{1,20}$')
+
+def validate_symbol(symbol: str) -> str:
+    """Sanitize and validate a stock symbol. Raises HTTPException on invalid input."""
+    sym = symbol.strip().upper()
+    if not _SYMBOL_RE.match(sym):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid stock symbol. Only alphanumeric characters, '&', and '-' are allowed (max 20 chars)."
+        )
+    return sym
+
 # Cache
-price_cache = {}
-news_cache = {}
-analysis_cache = {}
+price_cache: Dict = {}
+news_cache: Dict = {}
+analysis_cache: Dict = {}
 cache_timeout = 120  # 2 minutes
+CACHE_MAX_SIZE = 500  # max entries per cache dict
+
+def _cache_set(cache: Dict, key: str, value: Any) -> None:
+    """Set a cache entry, evicting the oldest entry if the cache is full."""
+    if len(cache) >= CACHE_MAX_SIZE:
+        # Remove the oldest entry
+        oldest_key = next(iter(cache))
+        del cache[oldest_key]
+    cache[key] = value
 
 # ============== OPENAI INTELLIGENT ANALYSIS ==============
 
@@ -89,7 +128,7 @@ Provide a JSON response with this exact structure:
         if json_match:
             return json.loads(json_match.group())
     except Exception as e:
-        print(f"OpenAI analysis error: {e}")
+        logger.warning(f"OpenAI analysis error: {e}")
     
     return None
 
@@ -121,7 +160,7 @@ Respond with ONLY a JSON object:
         if json_match:
             return json.loads(json_match.group())
     except Exception as e:
-        print(f"OpenAI sentiment error: {e}")
+        logger.warning(f"OpenAI sentiment error: {e}")
     
     return None
 
@@ -145,7 +184,7 @@ async def search_stock_info(symbol: str) -> Dict[str, Any]:
             return nse_data
             
     except Exception as e:
-        print(f"Search error for {symbol}: {e}")
+        logger.warning(f"Search error for {symbol}: {e}")
     
     return None
 
@@ -196,7 +235,7 @@ async def fetch_nse_stock_quote(symbol: str) -> Optional[Dict[str, Any]]:
                             "timestamp": datetime.now().isoformat()
                         }
     except Exception as e:
-        print(f"NSE API error for {symbol}: {e}")
+        logger.warning(f"NSE API error for {symbol}: {e}")
     return None
 
 
@@ -241,10 +280,10 @@ async def fetch_nse_indices() -> List[Dict[str, Any]]:
                                     "signal": "Strong upward momentum" if change_pct > 1 else "Upward trend" if change_pct > 0 else "Downward pressure" if change_pct < 0 else "Stable"
                                 })
                 except Exception as e:
-                    print(f"Yahoo index error for {yahoo_sym}: {e}")
+                    logger.warning(f"Yahoo index error for {yahoo_sym}: {e}")
                     continue
     except Exception as e:
-        print(f"Yahoo indices error: {e}")
+        logger.warning(f"Yahoo indices error: {e}")
     
     # If we got indices from Yahoo, return them
     if indices:
@@ -309,7 +348,7 @@ async def fetch_nse_indices() -> List[Dict[str, Any]]:
                             "signal": nifty['signal']
                         })
     except Exception as e:
-        print(f"NSE indices error: {e}")
+        logger.warning(f"NSE indices error: {e}")
     
     return indices
 
@@ -372,7 +411,7 @@ async def fetch_yahoo_finance_quote(symbol: str) -> Optional[Dict[str, Any]]:
                         "timestamp": datetime.now().isoformat()
                     }
     except Exception as e:
-        print(f"Yahoo Finance error for {symbol}: {e}")
+        logger.warning(f"Yahoo Finance error for {symbol}: {e}")
     return None
 
 
@@ -406,7 +445,7 @@ async def fetch_yahoo_stock_info(symbol: str) -> Dict[str, Any]:
                         "fiftyTwoWeekLow": summary.get('fiftyTwoWeekLow', {}).get('raw', 0),
                     }
     except Exception as e:
-        print(f"Yahoo info error: {e}")
+        logger.warning(f"Yahoo info error: {e}")
     return {}
 
 
@@ -464,7 +503,9 @@ async def scrape_moneycontrol_news(symbol: str) -> List[Dict[str, Any]]:
                             
                             for article in articles[:10]:
                                 headline = article.get_text(strip=True)
-                                if headline and len(headline) > 20 and len(headline) < 300:
+                                # Strip any residual HTML tags and limit length
+                                headline = re.sub(r'<[^>]+>', '', headline)[:300]
+                                if headline and len(headline) > 20:
                                     # Use OpenAI for sentiment if available, else TextBlob
                                     sentiment_result = await openai_sentiment_analysis(headline)
                                     
@@ -491,11 +532,11 @@ async def scrape_moneycontrol_news(symbol: str) -> List[Dict[str, Any]]:
                             if len(news_items) >= 4:
                                 break
                 except Exception as e:
-                    print(f"MoneyControl URL error {url}: {e}")
+                    logger.warning(f"MoneyControl URL error {url}: {e}")
                     continue
                     
     except Exception as e:
-        print(f"MoneyControl scraping error: {e}")
+        logger.warning(f"MoneyControl scraping error: {e}")
     
     return news_items[:6]
 
@@ -505,9 +546,14 @@ async def scrape_moneycontrol_news(symbol: str) -> List[Dict[str, Any]]:
 async def scrape_economic_times_news(symbol: str) -> List[Dict[str, Any]]:
     """Scrape news from Economic Times"""
     news_items = []
-    
+
+    # Only allow safe alphanumeric symbols in the URL path to prevent path traversal
+    safe_symbol = re.sub(r'[^a-z0-9]', '', symbol.lower())
+    if not safe_symbol:
+        return []
+
     try:
-        url = f"https://economictimes.indiatimes.com/{symbol.lower()}/stocks/companyid-0.cms"
+        url = f"https://economictimes.indiatimes.com/{safe_symbol}/stocks/companyid-0.cms"
         headers = {"User-Agent": "Mozilla/5.0"}
         
         async with aiohttp.ClientSession() as session:
@@ -519,8 +565,8 @@ async def scrape_economic_times_news(symbol: str) -> List[Dict[str, Any]]:
                     headlines = soup.find_all(['a', 'h2', 'h3'], class_=re.compile(r'title|headline'))
                     
                     for h in headlines[:8]:
-                        text = h.get_text(strip=True)
-                        if text and len(text) > 20 and len(text) < 200:
+                        text = re.sub(r'<[^>]+>', '', h.get_text(strip=True))[:200]
+                        if text and len(text) > 20:
                             sentiment_result = await openai_sentiment_analysis(text)
                             
                             if sentiment_result:
@@ -540,7 +586,7 @@ async def scrape_economic_times_news(symbol: str) -> List[Dict[str, Any]]:
                                 "relevance": min(90, max(45, int(abs(score) * 100) + 45))
                             })
     except Exception as e:
-        print(f"Economic Times error: {e}")
+        logger.warning(f"Economic Times error: {e}")
     
     return news_items[:4]
 
@@ -606,7 +652,7 @@ async def fetch_historical_prices(symbol: str) -> List[float]:
                     closes = result.get('indicators', {}).get('quote', [{}])[0].get('close', [])
                     return [c for c in closes if c is not None]
     except Exception as e:
-        print(f"Historical data error: {e}")
+        logger.warning(f"Historical data error: {e}")
     return []
 
 
@@ -640,7 +686,7 @@ async def get_stock_quote(symbol: str) -> Dict[str, Any]:
             data.update(extra_info)
     
     if data and data.get('currentPrice', 0) > 0:
-        price_cache[cache_key] = (datetime.now(), data)
+        _cache_set(price_cache, cache_key, (datetime.now(), data))
         return data
     
     # Return empty structure if nothing found
@@ -874,7 +920,8 @@ async def perform_full_analysis(symbol: str) -> Dict[str, Any]:
 # ============== API ENDPOINTS ==============
 
 @app.get("/")
-async def root():
+@limiter.limit("60/minute")
+async def root(request: Request):
     return {
         "message": "TradeGPT API - ULTIMATE REAL-TIME Indian Stock Market",
         "version": "4.0.0",
@@ -892,67 +939,73 @@ async def root():
 
 
 @app.get("/api/indices")
-async def get_indices():
+@limiter.limit("30/minute")
+async def get_indices(request: Request):
     """Get real-time market indices"""
     indices = await fetch_nse_indices()
     return {"indices": indices if indices else []}
 
 
 @app.get("/api/stock/{symbol}")
-async def get_stock_quote_endpoint(symbol: str):
+@limiter.limit("30/minute")
+async def get_stock_quote_endpoint(request: Request, symbol: str):
     """Get real-time stock quote - WORKS FOR ANY STOCK"""
-    data = await get_stock_quote(symbol.upper())
+    sym = validate_symbol(symbol)
+    data = await get_stock_quote(sym)
     if data.get('currentPrice', 0) == 0:
-        raise HTTPException(status_code=404, detail=f"Could not fetch data for {symbol}. Please verify the symbol.")
+        raise HTTPException(status_code=404, detail=f"Could not fetch data for {sym}. Please verify the symbol.")
     return data
 
 
 @app.get("/api/stock/{symbol}/history")
-async def get_stock_history(symbol: str, period: str = "1mo"):
+@limiter.limit("20/minute")
+async def get_stock_history(request: Request, symbol: str, period: str = "1mo"):
     """Get historical stock data"""
-    prices = await fetch_historical_prices(symbol.upper())
-    
+    sym = validate_symbol(symbol)
+    prices = await fetch_historical_prices(sym)
+
     if prices:
         data = []
         for i, price in enumerate(prices):
             data.append({
                 "date": (datetime.now() - timedelta(days=len(prices)-i)).strftime("%Y-%m-%d"),
-                "open": round(price * (1 + (np.random.random() - 0.5) * 0.01), 2),
-                "high": round(price * 1.01, 2),
-                "low": round(price * 0.99, 2),
                 "close": round(price, 2),
-                "volume": int(np.random.randint(1000000, 10000000))
             })
-        return {"symbol": symbol.upper(), "data": data}
-    
-    return {"symbol": symbol.upper(), "data": []}
+        return {"symbol": sym, "data": data}
+
+    return {"symbol": sym, "data": []}
 
 
 @app.get("/api/stock/{symbol}/news")
-async def get_stock_news(symbol: str):
+@limiter.limit("20/minute")
+async def get_stock_news(request: Request, symbol: str):
     """Get real news for a stock"""
-    mc_news = await scrape_moneycontrol_news(symbol.upper())
-    et_news = await scrape_economic_times_news(symbol.upper())
+    sym = validate_symbol(symbol)
+    mc_news = await scrape_moneycontrol_news(sym)
+    et_news = await scrape_economic_times_news(sym)
     all_news = mc_news + et_news
-    
-    return {"symbol": symbol.upper(), "news": all_news[:6] if all_news else []}
+
+    return {"symbol": sym, "news": all_news[:6] if all_news else []}
 
 
 @app.post("/api/analyze/{symbol}")
-async def analyze_stock(symbol: str):
+@limiter.limit("10/minute")
+async def analyze_stock(request: Request, symbol: str):
     """Perform comprehensive analysis with REAL data + OpenAI"""
+    sym = validate_symbol(symbol)
     try:
-        analysis = await perform_full_analysis(symbol.upper())
+        analysis = await perform_full_analysis(sym)
         return analysis
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Analysis error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Analysis error for symbol %s: %s", sym, e)
+        raise HTTPException(status_code=500, detail="Internal server error. Please try again later.")
 
 
 @app.get("/api/search")
-async def search_stocks(query: str = Query(..., min_length=1)):
+@limiter.limit("30/minute")
+async def search_stocks(request: Request, query: str = Query(..., min_length=1, max_length=50)):
     """Search for stocks"""
     stock_db = {
         "RELIANCE": "Reliance Industries Ltd",
@@ -1031,7 +1084,7 @@ async def websocket_prices(websocket: WebSocket):
     except WebSocketDisconnect:
         pass
     except Exception as e:
-        print(f"WebSocket error: {e}")
+        logger.warning(f"WebSocket error: {e}")
 
 
 # ============== MAIN ==============
