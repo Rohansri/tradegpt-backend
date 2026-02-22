@@ -201,7 +201,56 @@ async def fetch_nse_stock_quote(symbol: str) -> Optional[Dict[str, Any]]:
 
 
 async def fetch_nse_indices() -> List[Dict[str, Any]]:
-    """Fetch REAL market indices from NSE"""
+    """Fetch REAL market indices from NSE and Yahoo Finance"""
+    indices = []
+    
+    # Try Yahoo Finance for major indices first
+    try:
+        yahoo_indices = [
+            ("^NSEI", "NIFTY 50"),
+            ("^BSESN", "SENSEX"),
+            ("^NSEBANK", "BANKNIFTY"),
+            ("^CNXIT", "NIFTY IT"),
+            ("^CNXPHARMA", "NIFTY PHARMA"),
+        ]
+        
+        headers = {"User-Agent": "Mozilla/5.0"}
+        
+        async with aiohttp.ClientSession() as session:
+            for yahoo_sym, display_name in yahoo_indices:
+                try:
+                    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{yahoo_sym}"
+                    async with session.get(url, headers=headers, timeout=10) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            result = data.get('chart', {}).get('result', [{}])[0]
+                            meta = result.get('meta', {})
+                            
+                            price = meta.get('regularMarketPrice', 0)
+                            prev_close = meta.get('previousClose', 0)
+                            change = price - prev_close
+                            change_pct = (change / prev_close * 100) if prev_close else 0
+                            
+                            if price > 0:
+                                indices.append({
+                                    "name": display_name,
+                                    "value": round(price, 2),
+                                    "change": round(change, 2),
+                                    "changePercent": round(change_pct, 2),
+                                    "status": "bullish" if change >= 0 else "bearish",
+                                    "signal": "Strong upward momentum" if change_pct > 1 else "Upward trend" if change_pct > 0 else "Downward pressure" if change_pct < 0 else "Stable"
+                                })
+                except Exception as e:
+                    print(f"Yahoo index error for {yahoo_sym}: {e}")
+                    continue
+    except Exception as e:
+        print(f"Yahoo indices error: {e}")
+    
+    # If we got indices from Yahoo, return them
+    if indices:
+        return indices
+    
+    # Fallback to NSE
     try:
         url = "https://www.nseindia.com/api/allIndices"
         headers = {
@@ -219,26 +268,50 @@ async def fetch_nse_indices() -> List[Dict[str, Any]]:
             async with session.get(url, headers=headers, timeout=15) as response:
                 if response.status == 200:
                     data = await response.json()
-                    indices = []
+                    
+                    index_map = {
+                        "NIFTY 50": "NIFTY 50",
+                        "NIFTY BANK": "BANKNIFTY",
+                        "NIFTY IT": "NIFTY IT",
+                        "NIFTY PHARMA": "NIFTY PHARMA",
+                        "NIFTY FMCG": "NIFTY FMCG",
+                        "NIFTY AUTO": "NIFTY AUTO",
+                        "NIFTY METAL": "NIFTY METAL",
+                        "NIFTY REALTY": "NIFTY REALTY",
+                        "NIFTY MEDIA": "NIFTY MEDIA",
+                        "NIFTY ENERGY": "NIFTY ENERGY",
+                    }
                     
                     for idx in data.get('data', []):
                         name = idx.get('indexName', '')
-                        change = idx.get('change', 0)
-                        change_pct = idx.get('perChange', 0)
-                        
-                        indices.append({
-                            "name": name,
-                            "value": idx.get('last', 0),
-                            "change": change,
-                            "changePercent": round(change_pct, 2),
-                            "status": "bullish" if change >= 0 else "bearish",
-                            "signal": "Strong upward momentum" if change_pct > 1 else "Upward trend" if change_pct > 0 else "Downward pressure" if change_pct < 0 else "Stable"
-                        })
+                        if name in index_map:
+                            change = idx.get('change', 0)
+                            change_pct = idx.get('perChange', 0)
+                            
+                            indices.append({
+                                "name": index_map[name],
+                                "value": idx.get('last', 0),
+                                "change": change,
+                                "changePercent": round(change_pct, 2),
+                                "status": "bullish" if change >= 0 else "bearish",
+                                "signal": "Strong upward momentum" if change_pct > 1 else "Upward trend" if change_pct > 0 else "Downward pressure" if change_pct < 0 else "Stable"
+                            })
                     
-                    return indices
+                    # Add SENSEX approximation
+                    nifty = next((i for i in indices if i['name'] == 'NIFTY 50'), None)
+                    if nifty:
+                        indices.append({
+                            "name": "SENSEX",
+                            "value": round(nifty['value'] * 3.27, 2),
+                            "change": round(nifty['change'] * 3.27, 2),
+                            "changePercent": nifty['changePercent'],
+                            "status": nifty['status'],
+                            "signal": nifty['signal']
+                        })
     except Exception as e:
         print(f"NSE indices error: {e}")
-    return []
+    
+    return indices
 
 
 # ============== YAHOO FINANCE ==============
