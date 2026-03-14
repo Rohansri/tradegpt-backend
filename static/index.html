@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MedPlus – India's Trusted Health Platform</title>
+  <style>
+    /* ── Reset & Variables ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #e53935;
+      --primary-dark: #b71c1c;
+      --primary-light: #ffebee;
+      --teal: #00897b;
+      --teal-light: #e0f2f1;
+      --orange: #ff6d00;
+      --text: #212121;
+      --text-light: #757575;
+      --border: #e0e0e0;
+      --bg: #f5f5f5;
+      --white: #ffffff;
+      --shadow: 0 2px 8px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+      --radius: 10px;
+    }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; border: none; outline: none; font-family: inherit; }
+    input { outline: none; font-family: inherit; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+    /* ── Header ── */
+    header {
+      position: sticky; top: 0; z-index: 1000;
+      background: var(--primary);
+      box-shadow: 0 2px 10px rgba(229,57,53,0.3);
+    }
+    .header-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; align-items: center; gap: 16px;
+      padding: 12px 20px;
+    }
+    .logo {
+      font-size: 1.5rem; font-weight: 800; color: white;
+      white-space: nowrap; letter-spacing: -0.5px;
+    }
+    .logo span { color: #ffcdd2; }
+    .search-bar {
+      flex: 1; display: flex; align-items: center;
+      background: white; border-radius: 8px;
+      overflow: hidden; box-shadow: var(--shadow);
+    }
+    .search-bar input {
+      flex: 1; padding: 10px 16px; border: none;
+      font-size: 0.95rem; color: var(--text);
+    }
+    .search-bar select {
+      border: none; border-left: 1px solid var(--border);
+      padding: 10px 12px; font-size: 0.85rem;
+      background: #fafafa; color: var(--text); cursor: pointer;
+    }
+    .search-btn {
+      padding: 10px 18px; background: var(--primary-dark);
+      color: white; font-size: 1rem; border-left: none;
+      transition: background 0.2s;
+    }
+    .search-btn:hover { background: #7f0000; }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .header-btn {
+      padding: 8px 16px; border-radius: 6px;
+      font-size: 0.85rem; font-weight: 600;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-login { background: white; color: var(--primary); }
+    .btn-login:hover { background: #ffcdd2; }
+    .cart-btn {
+      position: relative; background: white;
+      color: var(--primary); padding: 8px 14px;
+      border-radius: 6px; font-size: 0.85rem;
+      font-weight: 600; display: flex; align-items: center; gap: 6px;
+    }
+    .cart-btn:hover { background: #ffcdd2; }
+    .cart-badge {
+      position: absolute; top: -6px; right: -6px;
+      background: var(--orange); color: white;
+      border-radius: 50%; width: 18px; height: 18px;
+      font-size: 0.7rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      display: none;
+    }
+
+    /* ── Nav Bar ── */
+    .nav-bar {
+      background: white; border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; gap: 0; padding: 0 20px;
+    }
+    .nav-item {
+      padding: 14px 20px; font-size: 0.9rem; font-weight: 600;
+      color: var(--text-light); cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .nav-item:hover { color: var(--primary); }
+    .nav-item.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* ── Main Container ── */
+    .container { max-width: 1280px; margin: 0 auto; padding: 24px 20px; }
+
+    /* ── Sections ── */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── Hero Banner ── */
+    .hero {
+      background: linear-gradient(135deg, var(--primary) 0%, #ff6f60 100%);
+      border-radius: 16px; padding: 48px 40px;
+      color: white; margin-bottom: 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      overflow: hidden; position: relative;
+    }
+    .hero::after {
+      content: '🏥'; font-size: 160px;
+      position: absolute; right: 40px; top: 50%;
+      transform: translateY(-50%); opacity: 0.15;
+    }
+    .hero-text h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 12px; }
+    .hero-text p { font-size: 1.1rem; opacity: 0.9; margin-bottom: 24px; max-width: 500px; }
+    .hero-cta {
+      display: flex; gap: 12px; flex-wrap: wrap;
+    }
+    .cta-btn {
+      padding: 12px 28px; border-radius: 8px;
+      font-size: 1rem; font-weight: 700;
+      transition: all 0.2s; cursor: pointer; border: none;
+    }
+    .cta-primary { background: white; color: var(--primary); }
+    .cta-primary:hover { background: #ffcdd2; transform: translateY(-1px); }
+    .cta-secondary { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.7); }
+    .cta-secondary:hover { background: rgba(255,255,255,0.15); transform: translateY(-1px); }
+
+    /* ── Section Heading ── */
+    .sec-heading {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px;
+    }
+    .sec-heading h2 { font-size: 1.3rem; font-weight: 700; color: var(--text); }
+    .see-all {
+      font-size: 0.875rem; font-weight: 600;
+      color: var(--primary); cursor: pointer;
+    }
+    .see-all:hover { text-decoration: underline; }
+
+    /* ── Category Grid ── */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 14px; margin-bottom: 36px;
+    }
+    .cat-card {
+      background: white; border-radius: 12px;
+      padding: 18px 10px; text-align: center;
+      cursor: pointer; transition: all 0.2s;
+      box-shadow: var(--shadow);
+    }
+    .cat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .cat-icon { font-size: 2rem; margin-bottom: 8px; }
+    .cat-name { font-size: 0.78rem; font-weight: 600; color: var(--text); }
+
+    /* ── Medicine Cards Grid ── */
+    .med-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 18px;
+    }
+    .med-card {
+      background: white; border-radius: 12px;
+      padding: 20px; box-shadow: var(--shadow);
+      transition: all 0.2s; position: relative;
+    }
+    .med-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .med-badge {
+      position: absolute; top: 12px; right: 12px;
+      background: #e8f5e9; color: #388e3c;
+      font-size: 0.72rem; font-weight: 700;
+      padding: 3px 8px; border-radius: 20px;
+    }
+    .med-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .med-name {
+      font-size: 0.9rem; font-weight: 700;
+      color: var(--text); margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .med-manufacturer {
+      font-size: 0.75rem; color: var(--text-light);
+      margin-bottom: 8px;
+    }
+    .med-composition {
+      font-size: 0.72rem; color: #9e9e9e;
+      margin-bottom: 12px; line-height: 1.4;
+    }
+    .med-rating { display: flex; align-items: center; gap: 4px; margin-bottom: 12px; }
+    .stars { color: #ffc107; font-size: 0.8rem; }
+    .rating-count { font-size: 0.75rem; color: var(--text-light); }
+    .med-price { display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px; }
+    .price-current { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+    .price-mrp { font-size: 0.8rem; color: #9e9e9e; text-decoration: line-through; }
+    .price-discount { font-size: 0.78rem; color: #43a047; font-weight: 600; }
+    .rx-tag {
+      display: inline-block; background: #fff3e0;
+      color: #e65100; font-size: 0.7rem; font-weight: 700;
+      padding: 2px 8px; border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .add-btn {
+      width: 100%; padding: 9px;
+      background: var(--primary); color: white;
+      border-radius: 7px; font-size: 0.85rem;
+      font-weight: 700; transition: background 0.2s;
+    }
+    .add-btn:hover { background: var(--primary-dark); }
+    .add-btn.added { background: var(--teal); }
+
+    /* ── Search Bar Top (section) ── */
+    .section-search {
+      display: flex; gap: 12px; margin-bottom: 24px;
+    }
+    .section-search input {
+      flex: 1; padding: 11px 16px;
+      border: 2px solid var(--border); border-radius: 8px;
+      font-size: 0.95rem; transition: border-color 0.2s;
+    }
+    .section-search input:focus { border-color: var(--primary); }
+    .section-search button {
+      padding: 11px 24px; background: var(--primary);
+      color: white; border-radius: 8px;
+      font-size: 0.95rem; font-weight: 600;
+      transition: background 0.2s;
+    }
+    .section-search button:hover { background: var(--primary-dark); }
+
+    /* ── Filter Chips ── */
+    .filter-chips {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .chip {
+      padding: 7px 16px; border-radius: 20px;
+      font-size: 0.82rem; font-weight: 600;
+      border: 1.5px solid var(--border);
+      background: white; color: var(--text-light);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .chip:hover, .chip.active {
+      background: var(--primary); color: white;
+      border-color: var(--primary);
+    }
+
+    /* ── Lab Test Cards ── */
+    .lab-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px;
+    }
+    .lab-card {
+      background: white; border-radius: 12px;
+      padding: 20px; box-shadow: var(--shadow);
+      transition: all 0.2s; position: relative;
+    }
+    .lab-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .lab-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+    .lab-icon-wrap {
+      width: 50px; height: 50px; border-radius: 12px;
+      background: var(--teal-light); display: flex;
+      align-items: center; justify-content: center;
+      font-size: 1.6rem; flex-shrink: 0;
+    }
+    .lab-name { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .lab-params { font-size: 0.78rem; color: var(--text-light); }
+    .lab-meta {
+      display: flex; gap: 16px; margin-bottom: 14px;
+    }
+    .lab-meta-item { font-size: 0.78rem; color: var(--text-light); }
+    .lab-meta-item strong { color: var(--teal); display: block; font-size: 0.8rem; }
+    .lab-price { display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px; }
+    .lab-price-current { font-size: 1.15rem; font-weight: 800; color: var(--text); }
+    .lab-price-mrp { font-size: 0.8rem; color: #9e9e9e; text-decoration: line-through; }
+    .lab-discount { font-size: 0.78rem; color: #43a047; font-weight: 600; }
+    .book-btn {
+      width: 100%; padding: 10px;
+      background: var(--teal); color: white;
+      border-radius: 7px; font-size: 0.88rem;
+      font-weight: 700; transition: background 0.2s;
+    }
+    .book-btn:hover { background: #00695c; }
+
+    /* ── Doctor Cards ── */
+    .doc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .doc-card {
+      background: white; border-radius: 14px;
+      padding: 22px; box-shadow: var(--shadow);
+      transition: all 0.2s;
+    }
+    .doc-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .doc-header { display: flex; gap: 16px; margin-bottom: 16px; }
+    .doc-avatar {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-light), #ffcdd2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; flex-shrink: 0;
+    }
+    .doc-info .doc-name { font-size: 1rem; font-weight: 700; margin-bottom: 3px; }
+    .doc-spec { font-size: 0.82rem; color: var(--primary); font-weight: 600; margin-bottom: 3px; }
+    .doc-exp { font-size: 0.78rem; color: var(--text-light); }
+    .doc-hospital { font-size: 0.78rem; color: var(--text-light); margin-bottom: 14px; display: flex; align-items: center; gap: 4px; }
+    .doc-stats {
+      display: flex; gap: 20px; margin-bottom: 14px;
+      padding: 12px; background: var(--bg); border-radius: 8px;
+    }
+    .doc-stat { text-align: center; }
+    .doc-stat-val { font-size: 0.95rem; font-weight: 800; color: var(--text); }
+    .doc-stat-label { font-size: 0.72rem; color: var(--text-light); }
+    .doc-slot {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .slot-badge {
+      background: #e8f5e9; color: #388e3c;
+      padding: 4px 12px; border-radius: 20px;
+      font-size: 0.78rem; font-weight: 700;
+    }
+    .slot-time { font-size: 0.82rem; color: var(--text-light); }
+    .consult-btn {
+      width: 100%; padding: 11px;
+      background: var(--primary); color: white;
+      border-radius: 8px; font-size: 0.88rem;
+      font-weight: 700; transition: background 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .consult-btn:hover { background: var(--primary-dark); }
+
+    /* ── Cart Section ── */
+    .cart-layout { display: grid; grid-template-columns: 1fr 360px; gap: 24px; }
+    .cart-items-box { background: white; border-radius: 14px; padding: 24px; box-shadow: var(--shadow); }
+    .cart-summary-box { background: white; border-radius: 14px; padding: 24px; box-shadow: var(--shadow); height: fit-content; }
+    .cart-empty {
+      text-align: center; padding: 60px 20px; color: var(--text-light);
+    }
+    .cart-empty .empty-icon { font-size: 4rem; margin-bottom: 16px; }
+    .cart-empty p { font-size: 1.1rem; margin-bottom: 20px; }
+    .cart-item {
+      display: flex; gap: 16px; padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .cart-item:last-child { border-bottom: none; }
+    .cart-item-icon { font-size: 2rem; flex-shrink: 0; }
+    .cart-item-info { flex: 1; }
+    .cart-item-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 3px; }
+    .cart-item-mfr { font-size: 0.75rem; color: var(--text-light); margin-bottom: 8px; }
+    .qty-control { display: flex; align-items: center; gap: 8px; }
+    .qty-btn {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: var(--bg); font-size: 1rem; font-weight: 700;
+      color: var(--primary); transition: background 0.15s;
+    }
+    .qty-btn:hover { background: var(--primary-light); }
+    .qty-val { font-size: 0.9rem; font-weight: 700; min-width: 24px; text-align: center; }
+    .cart-item-price { font-size: 1rem; font-weight: 800; color: var(--text); margin-left: auto; }
+    .remove-btn {
+      background: none; color: #ef5350;
+      font-size: 0.8rem; margin-top: 6px; padding: 2px 0;
+      font-weight: 600;
+    }
+    .remove-btn:hover { text-decoration: underline; }
+    .summary-row {
+      display: flex; justify-content: space-between;
+      padding: 8px 0; font-size: 0.9rem;
+    }
+    .summary-row.total {
+      font-size: 1.05rem; font-weight: 800;
+      border-top: 2px solid var(--border); margin-top: 8px; padding-top: 14px;
+    }
+    .summary-row .free { color: #43a047; font-weight: 600; }
+    .checkout-btn {
+      width: 100%; padding: 14px;
+      background: var(--primary); color: white;
+      border-radius: 9px; font-size: 1rem;
+      font-weight: 700; margin-top: 20px;
+      transition: background 0.2s;
+    }
+    .checkout-btn:hover { background: var(--primary-dark); }
+    .safe-badge {
+      text-align: center; font-size: 0.78rem;
+      color: var(--text-light); margin-top: 12px;
+    }
+
+    /* ── Info Banner Strip ── */
+    .info-strip {
+      display: flex; gap: 0;
+      background: white; border-radius: 12px;
+      box-shadow: var(--shadow); margin-bottom: 32px;
+      overflow: hidden;
+    }
+    .info-strip-item {
+      flex: 1; display: flex; align-items: center;
+      gap: 12px; padding: 18px 20px;
+      border-right: 1px solid var(--border);
+    }
+    .info-strip-item:last-child { border-right: none; }
+    .info-icon { font-size: 1.8rem; }
+    .info-title { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+    .info-sub { font-size: 0.75rem; color: var(--text-light); }
+
+    /* ── Specializations ── */
+    .spec-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 12px; margin-bottom: 30px;
+    }
+    .spec-chip {
+      background: white; border-radius: 10px;
+      padding: 14px 10px; text-align: center;
+      cursor: pointer; box-shadow: var(--shadow);
+      transition: all 0.2s; font-size: 0.82rem;
+      font-weight: 600; color: var(--text);
+    }
+    .spec-chip:hover, .spec-chip.active {
+      background: var(--primary); color: white;
+      transform: translateY(-2px);
+    }
+    .spec-chip .spec-icon { font-size: 1.6rem; margin-bottom: 6px; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none; position: fixed;
+      inset: 0; background: rgba(0,0,0,0.55);
+      z-index: 2000; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: white; border-radius: 16px;
+      padding: 32px; width: 480px; max-width: 95vw;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: var(--shadow-md);
+      animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .modal-header {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 24px;
+    }
+    .modal-title { font-size: 1.2rem; font-weight: 700; }
+    .modal-close {
+      background: var(--bg); border-radius: 50%;
+      width: 32px; height: 32px; font-size: 1.2rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { background: #ffcdd2; color: var(--primary); }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%; padding: 10px 14px;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 0.9rem; font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--primary); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .submit-btn {
+      width: 100%; padding: 13px;
+      background: var(--primary); color: white;
+      border-radius: 9px; font-size: 1rem;
+      font-weight: 700; margin-top: 8px;
+      transition: background 0.2s;
+    }
+    .submit-btn:hover { background: var(--primary-dark); }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 30px; right: 30px;
+      background: #323232; color: white;
+      padding: 14px 24px; border-radius: 10px;
+      font-size: 0.9rem; font-weight: 500;
+      z-index: 3000; opacity: 0; pointer-events: none;
+      transform: translateY(10px);
+      transition: all 0.3s;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: var(--teal); }
+    .toast.error { background: var(--primary); }
+
+    /* ── Confirmation ── */
+    .confirm-box {
+      text-align: center; padding: 10px 0;
+    }
+    .confirm-icon { font-size: 3.5rem; margin-bottom: 16px; }
+    .confirm-title { font-size: 1.3rem; font-weight: 800; color: #388e3c; margin-bottom: 8px; }
+    .confirm-id {
+      font-size: 0.85rem; color: var(--text-light);
+      background: var(--bg); padding: 8px 16px;
+      border-radius: 8px; margin: 10px auto;
+      display: inline-block; font-family: monospace;
+    }
+    .confirm-detail { font-size: 0.88rem; color: var(--text-light); margin-top: 6px; }
+
+    /* ── Loading Spinner ── */
+    .spinner {
+      display: inline-block; width: 20px; height: 20px;
+      border: 3px solid rgba(229,57,53,0.2);
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state { text-align: center; padding: 48px; color: var(--text-light); }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .cat-grid { grid-template-columns: repeat(4, 1fr); }
+      .cart-layout { grid-template-columns: 1fr; }
+      .spec-grid { grid-template-columns: repeat(3, 1fr); }
+      .hero h1 { font-size: 1.5rem; }
+      .info-strip { flex-wrap: wrap; }
+      .header-inner { flex-wrap: wrap; }
+      .search-bar { order: 3; flex-basis: 100%; }
+    }
+    @media (max-width: 600px) {
+      .cat-grid { grid-template-columns: repeat(4, 1fr); }
+      .hero { padding: 30px 20px; }
+      .hero::after { display: none; }
+      .nav-item { padding: 12px 12px; font-size: 0.82rem; }
+      .spec-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* ── Pagination ── */
+    .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 30px; }
+    .page-btn {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: white; border: 1.5px solid var(--border);
+      font-size: 0.85rem; font-weight: 600;
+      transition: all 0.2s;
+    }
+    .page-btn:hover, .page-btn.active {
+      background: var(--primary); color: white; border-color: var(--primary);
+    }
+
+    /* ── Health Packages Banner ── */
+    .packages-strip {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 32px;
+    }
+    .pkg-card {
+      border-radius: 12px; padding: 22px;
+      color: white; cursor: pointer;
+      transition: transform 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .pkg-card:hover { transform: translateY(-2px); }
+    .pkg-card h3 { font-size: 1rem; font-weight: 800; margin-bottom: 6px; }
+    .pkg-card p { font-size: 0.8rem; opacity: 0.9; margin-bottom: 12px; }
+    .pkg-card .pkg-price {
+      font-size: 1.2rem; font-weight: 800;
+    }
+    .pkg-card .pkg-btn {
+      display: inline-block; background: rgba(255,255,255,0.25);
+      padding: 6px 14px; border-radius: 20px;
+      font-size: 0.78rem; font-weight: 700; margin-top: 8px;
+    }
+    .pkg-1 { background: linear-gradient(135deg, #00897b, #26a69a); }
+    .pkg-2 { background: linear-gradient(135deg, #1565c0, #1976d2); }
+    .pkg-3 { background: linear-gradient(135deg, #6a1b9a, #8e24aa); }
+
+    /* ── No Results ── */
+    .no-results {
+      text-align: center; padding: 48px;
+      color: var(--text-light); font-size: 1rem;
+    }
+    .no-results .no-icon { font-size: 3rem; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="header-inner">
+    <div class="logo">Med<span>Plus</span></div>
+    <div class="search-bar">
+      <input type="text" id="globalSearch" placeholder="Search medicines, lab tests, doctors..." />
+      <select id="searchType">
+        <option value="medicines">Medicines</option>
+        <option value="labs">Lab Tests</option>
+        <option value="doctors">Doctors</option>
+      </select>
+      <button class="search-btn" onclick="globalSearchHandler()">🔍</button>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn btn-login" onclick="showToast('Login feature coming soon!', 'success')">Login</button>
+      <button class="cart-btn" onclick="showSection('cart')">
+        🛒 Cart
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ── Nav ── -->
+<div class="nav-bar">
+  <div class="nav-inner">
+    <div class="nav-item active" onclick="showSection('home')">🏠 Home</div>
+    <div class="nav-item" onclick="showSection('medicines')">💊 Medicines</div>
+    <div class="nav-item" onclick="showSection('labs')">🔬 Lab Tests</div>
+    <div class="nav-item" onclick="showSection('doctors')">👨‍⚕️ Doctors</div>
+    <div class="nav-item" onclick="showSection('cart')">🛒 Cart</div>
+  </div>
+</div>
+
+<!-- ── Main ── -->
+<div class="container">
+
+  <!-- HOME SECTION -->
+  <section class="section active" id="sec-home">
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-text">
+        <h1>Your Health, Our Priority</h1>
+        <p>Order medicines, book lab tests & consult certified doctors — all at your fingertips.</p>
+        <div class="hero-cta">
+          <button class="cta-btn cta-primary" onclick="showSection('medicines')">Order Medicines</button>
+          <button class="cta-btn cta-secondary" onclick="showSection('labs')">Book Lab Tests</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Strip -->
+    <div class="info-strip">
+      <div class="info-strip-item">
+        <div class="info-icon">🚚</div>
+        <div><div class="info-title">Free Delivery</div><div class="info-sub">On orders above ₹499</div></div>
+      </div>
+      <div class="info-strip-item">
+        <div class="info-icon">✅</div>
+        <div><div class="info-title">100% Genuine</div><div class="info-sub">Only certified medicines</div></div>
+      </div>
+      <div class="info-strip-item">
+        <div class="info-icon">🏠</div>
+        <div><div class="info-title">Home Collection</div><div class="info-sub">Lab tests at your doorstep</div></div>
+      </div>
+      <div class="info-strip-item">
+        <div class="info-icon">⚡</div>
+        <div><div class="info-title">Fastest Delivery</div><div class="info-sub">In as fast as 2 hours</div></div>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="sec-heading">
+      <h2>Shop by Category</h2>
+      <span class="see-all" onclick="showSection('medicines')">See All →</span>
+    </div>
+    <div class="cat-grid" id="homeCatGrid"></div>
+
+    <!-- Health Packages -->
+    <div class="sec-heading" style="margin-top:8px">
+      <h2>Popular Health Packages</h2>
+      <span class="see-all" onclick="showSection('labs')">See All →</span>
+    </div>
+    <div class="packages-strip">
+      <div class="pkg-card pkg-1" onclick="showSection('labs')">
+        <h3>🔬 Full Body Checkup</h3>
+        <p>87 parameters including CBC, thyroid, liver, kidney & more</p>
+        <div class="pkg-price">₹1,999 <small style="font-size:0.7rem;text-decoration:line-through;opacity:0.8">₹3,500</small></div>
+        <div class="pkg-btn">Book Now</div>
+      </div>
+      <div class="pkg-card pkg-2" onclick="showSection('labs')">
+        <h3>❤️ Heart Health Package</h3>
+        <p>Lipid profile, ECG, blood pressure & cardiac enzymes</p>
+        <div class="pkg-price">₹1,299 <small style="font-size:0.7rem;text-decoration:line-through;opacity:0.8">₹2,200</small></div>
+        <div class="pkg-btn">Book Now</div>
+      </div>
+      <div class="pkg-card pkg-3" onclick="showSection('labs')">
+        <h3>🩸 Diabetes Care Package</h3>
+        <p>HbA1c, fasting glucose, insulin, kidney function</p>
+        <div class="pkg-price">₹899 <small style="font-size:0.7rem;text-decoration:line-through;opacity:0.8">₹1,500</small></div>
+        <div class="pkg-btn">Book Now</div>
+      </div>
+    </div>
+
+    <!-- Featured Medicines -->
+    <div class="sec-heading">
+      <h2>Top Selling Medicines</h2>
+      <span class="see-all" onclick="showSection('medicines')">See All →</span>
+    </div>
+    <div class="med-grid" id="featuredMeds"></div>
+  </section>
+
+  <!-- MEDICINES SECTION -->
+  <section class="section" id="sec-medicines">
+    <h2 style="font-size:1.4rem;font-weight:800;margin-bottom:20px">Medicines &amp; Healthcare</h2>
+    <div class="section-search">
+      <input type="text" id="medSearchInput" placeholder="Search by medicine name, composition..." />
+      <button onclick="searchMedicines()">Search</button>
+    </div>
+    <div class="filter-chips" id="medFilters"></div>
+    <div class="med-grid" id="medGrid">
+      <div class="loading-state"><span class="spinner"></span><br/>Loading medicines...</div>
+    </div>
+    <div class="pagination" id="medPagination"></div>
+  </section>
+
+  <!-- LAB TESTS SECTION -->
+  <section class="section" id="sec-labs">
+    <h2 style="font-size:1.4rem;font-weight:800;margin-bottom:20px">Lab Tests &amp; Diagnostics</h2>
+    <div class="section-search">
+      <input type="text" id="labSearchInput" placeholder="Search lab tests, packages..." />
+      <button onclick="searchLabs()">Search</button>
+    </div>
+    <div class="filter-chips" id="labFilters"></div>
+    <div class="lab-grid" id="labGrid">
+      <div class="loading-state"><span class="spinner"></span><br/>Loading tests...</div>
+    </div>
+  </section>
+
+  <!-- DOCTORS SECTION -->
+  <section class="section" id="sec-doctors">
+    <h2 style="font-size:1.4rem;font-weight:800;margin-bottom:20px">Consult Top Doctors Online</h2>
+    <div class="section-search">
+      <input type="text" id="docSearchInput" placeholder="Search by doctor name or specialization..." />
+      <button onclick="searchDoctors()">Search</button>
+    </div>
+    <div class="sec-heading" style="margin-bottom:14px">
+      <h2 style="font-size:1rem;color:var(--text-light)">Browse by Specialization</h2>
+    </div>
+    <div class="spec-grid" id="specGrid"></div>
+    <div class="doc-grid" id="docGrid">
+      <div class="loading-state"><span class="spinner"></span><br/>Loading doctors...</div>
+    </div>
+  </section>
+
+  <!-- CART SECTION -->
+  <section class="section" id="sec-cart">
+    <h2 style="font-size:1.4rem;font-weight:800;margin-bottom:20px">My Cart</h2>
+    <div class="cart-layout">
+      <div class="cart-items-box" id="cartItems">
+        <div class="cart-empty">
+          <div class="empty-icon">🛒</div>
+          <p>Your cart is empty</p>
+          <button class="add-btn" style="width:auto;padding:10px 28px" onclick="showSection('medicines')">Browse Medicines</button>
+        </div>
+      </div>
+      <div class="cart-summary-box" id="cartSummary" style="display:none">
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px">Order Summary</h3>
+        <div id="summaryRows"></div>
+        <button class="checkout-btn" onclick="openCheckout()">Proceed to Checkout</button>
+        <div class="safe-badge">🔒 100% Safe &amp; Secure Checkout</div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /container -->
+
+<!-- ── Lab Booking Modal ── -->
+<div class="modal-overlay" id="labModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Book Lab Test</div>
+      <button class="modal-close" onclick="closeModal('labModal')">✕</button>
+    </div>
+    <div style="background:var(--teal-light);border-radius:8px;padding:12px 16px;margin-bottom:20px">
+      <div style="font-weight:700;font-size:0.9rem" id="labModalName"></div>
+      <div style="font-size:0.8rem;color:var(--teal);font-weight:600" id="labModalPrice"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Patient Name *</label>
+        <input type="text" id="labPatientName" placeholder="Full name" />
+      </div>
+      <div class="form-group">
+        <label>Phone *</label>
+        <input type="tel" id="labPhone" placeholder="10-digit number" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Age *</label>
+        <input type="number" id="labAge" placeholder="Age" min="1" max="120" />
+      </div>
+      <div class="form-group">
+        <label>Gender *</label>
+        <select id="labGender">
+          <option value="">Select</option>
+          <option>Male</option><option>Female</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Preferred Date *</label>
+      <input type="date" id="labDate" />
+    </div>
+    <div class="form-group">
+      <label>Collection Address *</label>
+      <input type="text" id="labAddress" placeholder="House no., Street, Area, City" />
+    </div>
+    <button class="submit-btn" onclick="submitLabBooking()">Confirm Booking — Home Collection</button>
+  </div>
+</div>
+
+<!-- ── Doctor Booking Modal ── -->
+<div class="modal-overlay" id="docModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Book Consultation</div>
+      <button class="modal-close" onclick="closeModal('docModal')">✕</button>
+    </div>
+    <div style="background:var(--primary-light);border-radius:8px;padding:12px 16px;margin-bottom:20px">
+      <div style="font-weight:700;font-size:0.9rem" id="docModalName"></div>
+      <div style="font-size:0.8rem;color:var(--primary);font-weight:600" id="docModalFee"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Patient Name *</label>
+        <input type="text" id="docPatientName" placeholder="Full name" />
+      </div>
+      <div class="form-group">
+        <label>Phone *</label>
+        <input type="tel" id="docPhone" placeholder="10-digit number" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Age *</label>
+        <input type="number" id="docAge" placeholder="Age" min="1" max="120" />
+      </div>
+      <div class="form-group">
+        <label>Gender *</label>
+        <select id="docGender">
+          <option value="">Select</option>
+          <option>Male</option><option>Female</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Preferred Date *</label>
+        <input type="date" id="docDate" />
+      </div>
+      <div class="form-group">
+        <label>Time Slot *</label>
+        <select id="docSlot">
+          <option>09:00 AM</option><option>10:00 AM</option>
+          <option>11:30 AM</option><option>12:00 PM</option>
+          <option>02:00 PM</option><option>03:30 PM</option>
+          <option>05:00 PM</option><option>06:00 PM</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Symptoms / Reason</label>
+      <textarea id="docSymptoms" rows="3" placeholder="Briefly describe your symptoms..."></textarea>
+    </div>
+    <button class="submit-btn" onclick="submitDocBooking()">📹 Confirm Video Consultation</button>
+  </div>
+</div>
+
+<!-- ── Checkout Modal ── -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Delivery Details</div>
+      <button class="modal-close" onclick="closeModal('checkoutModal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input type="text" id="chkName" placeholder="Your name" />
+      </div>
+      <div class="form-group">
+        <label>Phone *</label>
+        <input type="tel" id="chkPhone" placeholder="10-digit number" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Delivery Address *</label>
+      <input type="text" id="chkAddress" placeholder="House no., Street, Area, City" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Pincode *</label>
+        <input type="text" id="chkPincode" placeholder="6-digit pincode" />
+      </div>
+      <div class="form-group">
+        <label>Payment Method</label>
+        <select id="chkPayment">
+          <option value="COD">Cash on Delivery</option>
+          <option value="UPI">UPI / GPay</option>
+          <option value="CARD">Credit / Debit Card</option>
+          <option value="NETBANKING">Net Banking</option>
+        </select>
+      </div>
+    </div>
+    <button class="submit-btn" onclick="placeOrder()">Place Order →</button>
+  </div>
+</div>
+
+<!-- ── Confirmation Modal ── -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div class="modal-header" style="justify-content:flex-end">
+      <button class="modal-close" onclick="closeModal('confirmModal')">✕</button>
+    </div>
+    <div class="confirm-box" id="confirmContent"></div>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = '';  // Same origin
+  const SESSION = 'sess_' + Math.random().toString(36).slice(2);
+
+  let allMedicines = [];
+  let allLabs = [];
+  let allDoctors = [];
+  let currentLabBooking = null;
+  let currentDocBooking = null;
+  let currentPage = 1;
+  const PAGE_SIZE = 12;
+  let filteredMedicines = [];
+  let activeCategory = null;
+  let activeSpec = null;
+
+  // ── Navigation ──
+  function showSection(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('sec-' + name).classList.add('active');
+    const navItems = document.querySelectorAll('.nav-item');
+    const map = { home: 0, medicines: 1, labs: 2, doctors: 3, cart: 4 };
+    if (map[name] !== undefined) navItems[map[name]].classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (name === 'medicines' && allMedicines.length === 0) loadMedicines();
+    if (name === 'labs' && allLabs.length === 0) loadLabs();
+    if (name === 'doctors' && allDoctors.length === 0) loadDoctors();
+    if (name === 'cart') renderCart();
+    if (name === 'home') loadHome();
+  }
+
+  // ── Toast ──
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => { t.className = 'toast'; }, 3000);
+  }
+
+  // ── Modals ──
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+  });
+
+  // ── Stars ──
+  function stars(r) {
+    const full = Math.floor(r), half = r % 1 >= 0.5;
+    return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - (half ? 1 : 0));
+  }
+
+  // ── Medicine Card ──
+  function medCard(m) {
+    return `
+      <div class="med-card">
+        ${m.discount ? `<div class="med-badge">${m.discount}% OFF</div>` : ''}
+        <div class="med-icon">${m.image}</div>
+        <div class="med-name">${m.name}</div>
+        <div class="med-manufacturer">${m.manufacturer}</div>
+        <div class="med-composition">${m.composition}</div>
+        ${m.prescription_required ? '<span class="rx-tag">Rx Required</span>' : ''}
+        <div class="med-rating">
+          <span class="stars">${stars(m.rating)}</span>
+          <span class="rating-count">(${m.reviews.toLocaleString()})</span>
+        </div>
+        <div class="med-price">
+          <span class="price-current">₹${m.price}</span>
+          <span class="price-mrp">₹${m.mrp}</span>
+          ${m.discount ? `<span class="price-discount">Save ${m.discount}%</span>` : ''}
+        </div>
+        <button class="add-btn" id="btn-${m.id}" onclick="addToCart('${m.id}')">
+          + Add to Cart
+        </button>
+      </div>`;
+  }
+
+  // ── Lab Card ──
+  function labCard(t) {
+    return `
+      <div class="lab-card">
+        <div class="lab-header">
+          <div class="lab-icon-wrap">${t.icon}</div>
+          <div>
+            <div class="lab-name">${t.name}</div>
+            <div class="lab-params">${t.parameters} Parameter${t.parameters > 1 ? 's' : ''} · ${t.category}</div>
+          </div>
+        </div>
+        <div class="lab-meta">
+          <div class="lab-meta-item"><strong>📦 ${t.turnaround_time}</strong>Results in</div>
+          <div class="lab-meta-item"><strong>🧫 ${t.sample}</strong>Sample type</div>
+          <div class="lab-meta-item"><strong>🍽 ${t.fasting.split(' ').slice(0,2).join(' ')}</strong>Fasting</div>
+        </div>
+        <div class="lab-price">
+          <span class="lab-price-current">₹${t.price}</span>
+          <span class="lab-price-mrp">₹${t.mrp}</span>
+          <span class="lab-discount">${t.discount}% OFF</span>
+        </div>
+        <button class="book-btn" onclick="openLabBooking('${t.id}')">📅 Book Home Collection</button>
+      </div>`;
+  }
+
+  // ── Doctor Card ──
+  function docCard(d) {
+    return `
+      <div class="doc-card">
+        <div class="doc-header">
+          <div class="doc-avatar">${d.image}</div>
+          <div class="doc-info">
+            <div class="doc-name">${d.name}</div>
+            <div class="doc-spec">${d.specialization}</div>
+            <div class="doc-exp">${d.experience} years experience</div>
+          </div>
+        </div>
+        <div class="doc-hospital">🏥 ${d.hospital}</div>
+        <div class="doc-stats">
+          <div class="doc-stat">
+            <div class="doc-stat-val">⭐ ${d.rating}</div>
+            <div class="doc-stat-label">${d.reviews} reviews</div>
+          </div>
+          <div class="doc-stat">
+            <div class="doc-stat-val">₹${d.fee}</div>
+            <div class="doc-stat-label">Consult fee</div>
+          </div>
+          <div class="doc-stat">
+            <div class="doc-stat-val">${d.experience}yr</div>
+            <div class="doc-stat-label">Experience</div>
+          </div>
+        </div>
+        <div class="doc-slot">
+          <span class="slot-badge">Available ${d.availability}</span>
+          <span class="slot-time">Next: ${d.next_slot}</span>
+        </div>
+        <button class="consult-btn" onclick="openDocBooking('${d.id}')">
+          📹 Consult Now · ₹${d.fee}
+        </button>
+      </div>`;
+  }
+
+  // ── Load Home ──
+  async function loadHome() {
+    const cats = await fetch(API + '/api/categories').then(r => r.json());
+    const catGrid = document.getElementById('homeCatGrid');
+    catGrid.innerHTML = cats.categories.map(c => `
+      <div class="cat-card" onclick="filterByCategory('${c.name}')">
+        <div class="cat-icon">${c.icon}</div>
+        <div class="cat-name">${c.name}</div>
+      </div>`).join('');
+
+    const meds = await fetch(API + '/api/medicines?limit=8').then(r => r.json());
+    document.getElementById('featuredMeds').innerHTML = meds.medicines.map(medCard).join('');
+  }
+
+  // ── Load Medicines ──
+  async function loadMedicines(url) {
+    const grid = document.getElementById('medGrid');
+    grid.innerHTML = '<div class="loading-state"><span class="spinner"></span><br/>Loading...</div>';
+    const data = await fetch(url || API + '/api/medicines?limit=12&page=' + currentPage).then(r => r.json());
+    allMedicines = data.medicines;
+    filteredMedicines = data.medicines;
+    renderMedGrid(data.medicines);
+    renderMedPagination(data.total);
+
+    if (!document.getElementById('medFilters').children.length) {
+      const cats = await fetch(API + '/api/categories').then(r => r.json());
+      const fil = document.getElementById('medFilters');
+      fil.innerHTML = `<span class="chip active" onclick="filterMedCategory(this, null)">All</span>` +
+        cats.categories.map(c =>
+          `<span class="chip" onclick="filterMedCategory(this, '${c.name}')">${c.icon} ${c.name}</span>`
+        ).join('');
+    }
+  }
+
+  function renderMedGrid(meds) {
+    const grid = document.getElementById('medGrid');
+    if (!meds.length) {
+      grid.innerHTML = '<div class="no-results"><div class="no-icon">😕</div>No medicines found.</div>';
+      return;
+    }
+    grid.innerHTML = meds.map(medCard).join('');
+  }
+
+  function renderMedPagination(total) {
+    const pages = Math.ceil(total / PAGE_SIZE);
+    if (pages <= 1) { document.getElementById('medPagination').innerHTML = ''; return; }
+    let html = '';
+    for (let i = 1; i <= pages; i++) {
+      html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="gotoPage(${i})">${i}</button>`;
+    }
+    document.getElementById('medPagination').innerHTML = html;
+  }
+
+  function gotoPage(p) {
+    currentPage = p;
+    const cat = activeCategory ? `&category=${encodeURIComponent(activeCategory)}` : '';
+    loadMedicines(API + `/api/medicines?limit=12&page=${p}${cat}`);
+  }
+
+  async function filterMedCategory(el, cat) {
+    document.querySelectorAll('#medFilters .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    activeCategory = cat;
+    currentPage = 1;
+    const url = cat
+      ? API + `/api/medicines?category=${encodeURIComponent(cat)}&limit=12&page=1`
+      : API + '/api/medicines?limit=12&page=1';
+    await loadMedicines(url);
+  }
+
+  async function searchMedicines() {
+    const q = document.getElementById('medSearchInput').value.trim();
+    if (!q) { loadMedicines(); return; }
+    const data = await fetch(API + `/api/medicines/search?q=${encodeURIComponent(q)}`).then(r => r.json());
+    renderMedGrid(data.medicines);
+    document.getElementById('medPagination').innerHTML = '';
+  }
+
+  function filterByCategory(cat) {
+    showSection('medicines');
+    setTimeout(async () => {
+      activeCategory = cat;
+      currentPage = 1;
+      await loadMedicines(API + `/api/medicines?category=${encodeURIComponent(cat)}&limit=12&page=1`);
+      document.querySelectorAll('#medFilters .chip').forEach(c => {
+        c.classList.toggle('active', c.textContent.trim().includes(cat));
+      });
+    }, 100);
+  }
+
+  // ── Load Labs ──
+  async function loadLabs(url) {
+    const grid = document.getElementById('labGrid');
+    grid.innerHTML = '<div class="loading-state"><span class="spinner"></span><br/>Loading...</div>';
+    const data = await fetch(url || API + '/api/labs').then(r => r.json());
+    allLabs = data.tests;
+    renderLabGrid(data.tests);
+
+    if (!document.getElementById('labFilters').children.length) {
+      const cats = [...new Set(data.tests.map(t => t.category))];
+      const fil = document.getElementById('labFilters');
+      fil.innerHTML = `<span class="chip active" onclick="filterLabCat(this,null)">All</span>` +
+        cats.map(c => `<span class="chip" onclick="filterLabCat(this,'${c}')">${c}</span>`).join('');
+    }
+  }
+
+  function renderLabGrid(tests) {
+    const grid = document.getElementById('labGrid');
+    if (!tests.length) {
+      grid.innerHTML = '<div class="no-results"><div class="no-icon">😕</div>No tests found.</div>';
+      return;
+    }
+    grid.innerHTML = tests.map(labCard).join('');
+  }
+
+  async function filterLabCat(el, cat) {
+    document.querySelectorAll('#labFilters .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    const url = cat ? API + `/api/labs?category=${encodeURIComponent(cat)}` : API + '/api/labs';
+    const data = await fetch(url).then(r => r.json());
+    renderLabGrid(data.tests);
+  }
+
+  async function searchLabs() {
+    const q = document.getElementById('labSearchInput').value.trim();
+    if (!q) { loadLabs(); return; }
+    const data = await fetch(API + `/api/labs/search?q=${encodeURIComponent(q)}`).then(r => r.json());
+    renderLabGrid(data.tests);
+  }
+
+  // ── Load Doctors ──
+  async function loadDoctors(url) {
+    const grid = document.getElementById('docGrid');
+    grid.innerHTML = '<div class="loading-state"><span class="spinner"></span><br/>Loading...</div>';
+    const data = await fetch(url || API + '/api/doctors').then(r => r.json());
+    allDoctors = data.doctors;
+    renderDocGrid(data.doctors);
+
+    const specs = [...new Set(data.doctors.map(d => d.specialization))];
+    const specIcons = {
+      'General Physician': '🩺', 'Cardiologist': '❤️', 'Dermatologist': '🌸',
+      'Orthopedic Surgeon': '🦴', 'Gynecologist': '👶', 'Pediatrician': '🧒',
+      'Psychiatrist': '🧠', 'Endocrinologist': '⚗️', 'Ophthalmologist': '👁️', 'Neurologist': '🧬'
+    };
+    const sg = document.getElementById('specGrid');
+    sg.innerHTML = `<div class="spec-chip ${!activeSpec ? 'active' : ''}" onclick="filterSpec(this,null)"><div class="spec-icon">🏥</div>All</div>` +
+      specs.map(s => `<div class="spec-chip" onclick="filterSpec(this,'${s}')"><div class="spec-icon">${specIcons[s] || '👨‍⚕️'}</div>${s}</div>`).join('');
+  }
+
+  function renderDocGrid(docs) {
+    const grid = document.getElementById('docGrid');
+    if (!docs.length) {
+      grid.innerHTML = '<div class="no-results"><div class="no-icon">😕</div>No doctors found.</div>';
+      return;
+    }
+    grid.innerHTML = docs.map(docCard).join('');
+  }
+
+  async function filterSpec(el, spec) {
+    activeSpec = spec;
+    document.querySelectorAll('#specGrid .spec-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    const url = spec ? API + `/api/doctors?specialization=${encodeURIComponent(spec)}` : API + '/api/doctors';
+    const data = await fetch(url).then(r => r.json());
+    renderDocGrid(data.doctors);
+  }
+
+  async function searchDoctors() {
+    const q = document.getElementById('docSearchInput').value.trim();
+    if (!q) { loadDoctors(); return; }
+    const data = await fetch(API + `/api/doctors/search?q=${encodeURIComponent(q)}`).then(r => r.json());
+    renderDocGrid(data.doctors);
+  }
+
+  // ── Cart ──
+  async function addToCart(medicineId) {
+    const btn = document.getElementById('btn-' + medicineId);
+    if (btn) { btn.disabled = true; btn.textContent = 'Adding...'; }
+    try {
+      const res = await fetch(API + `/api/cart/${SESSION}/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ medicine_id: medicineId, quantity: 1 })
+      }).then(r => r.json());
+      updateCartBadge(res.item_count);
+      if (btn) { btn.textContent = '✓ Added'; btn.classList.add('added'); }
+      showToast('Added to cart!', 'success');
+      setTimeout(() => {
+        if (btn) { btn.textContent = '+ Add to Cart'; btn.classList.remove('added'); btn.disabled = false; }
+      }, 2000);
+    } catch {
+      if (btn) { btn.textContent = '+ Add to Cart'; btn.disabled = false; }
+      showToast('Failed to add to cart', 'error');
+    }
+  }
+
+  function updateCartBadge(count) {
+    const badge = document.getElementById('cartBadge');
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+  }
+
+  async function renderCart() {
+    const data = await fetch(API + `/api/cart/${SESSION}`).then(r => r.json());
+    updateCartBadge(data.item_count);
+    const itemsBox = document.getElementById('cartItems');
+    const summaryBox = document.getElementById('cartSummary');
+
+    if (!data.items.length) {
+      itemsBox.innerHTML = `<div class="cart-empty">
+        <div class="empty-icon">🛒</div>
+        <p>Your cart is empty</p>
+        <button class="add-btn" style="width:auto;padding:10px 28px" onclick="showSection('medicines')">Browse Medicines</button>
+      </div>`;
+      summaryBox.style.display = 'none';
+      return;
+    }
+
+    itemsBox.innerHTML = data.items.map(item => `
+      <div class="cart-item">
+        <div class="cart-item-icon">${item.medicine.image}</div>
+        <div class="cart-item-info">
+          <div class="cart-item-name">${item.medicine.name}</div>
+          <div class="cart-item-mfr">${item.medicine.manufacturer} · ${item.medicine.pack_size}</div>
+          <div class="qty-control">
+            <button class="qty-btn" onclick="updateQty('${item.medicine.id}', ${item.quantity - 1})">−</button>
+            <span class="qty-val">${item.quantity}</span>
+            <button class="qty-btn" onclick="updateQty('${item.medicine.id}', ${item.quantity + 1})">+</button>
+          </div>
+          <button class="remove-btn" onclick="removeFromCart('${item.medicine.id}')">Remove</button>
+        </div>
+        <div class="cart-item-price">₹${(item.medicine.price * item.quantity).toFixed(2)}</div>
+      </div>`).join('');
+
+    const delivery = data.total >= 499 ? 0 : 49;
+    document.getElementById('summaryRows').innerHTML = `
+      <div class="summary-row"><span>Subtotal (${data.item_count} items)</span><span>₹${data.total.toFixed(2)}</span></div>
+      <div class="summary-row"><span>Delivery Charges</span><span class="${delivery === 0 ? 'free' : ''}">
+        ${delivery === 0 ? 'FREE' : '₹' + delivery}</span></div>
+      ${delivery > 0 ? `<div class="summary-row" style="font-size:0.78rem;color:var(--text-light)">
+        <span>Add ₹${(499 - data.total).toFixed(0)} more for free delivery</span></div>` : ''}
+      <div class="summary-row total"><span>Total</span><span>₹${(data.total + delivery).toFixed(2)}</span></div>`;
+    summaryBox.style.display = 'block';
+  }
+
+  async function updateQty(medId, qty) {
+    if (qty < 1) { removeFromCart(medId); return; }
+    await fetch(API + `/api/cart/${SESSION}/update/${medId}?quantity=${qty}`, { method: 'PUT' });
+    renderCart();
+  }
+
+  async function removeFromCart(medId) {
+    await fetch(API + `/api/cart/${SESSION}/remove/${medId}`, { method: 'DELETE' });
+    showToast('Removed from cart');
+    renderCart();
+  }
+
+  // ── Checkout ──
+  function openCheckout() {
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+    openModal('checkoutModal');
+  }
+
+  async function placeOrder() {
+    const name = document.getElementById('chkName').value.trim();
+    const phone = document.getElementById('chkPhone').value.trim();
+    const address = document.getElementById('chkAddress').value.trim();
+    const pincode = document.getElementById('chkPincode').value.trim();
+    if (!name || !phone || !address || !pincode) {
+      showToast('Please fill all required fields', 'error'); return;
+    }
+    const btn = document.querySelector('#checkoutModal .submit-btn');
+    btn.disabled = true; btn.textContent = 'Placing Order...';
+    try {
+      const order = await fetch(API + '/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: SESSION, name, phone, address, pincode,
+          payment_method: document.getElementById('chkPayment').value
+        })
+      }).then(r => r.json());
+      closeModal('checkoutModal');
+      document.getElementById('confirmContent').innerHTML = `
+        <div class="confirm-icon">✅</div>
+        <div class="confirm-title">Order Placed Successfully!</div>
+        <div class="confirm-id">${order.order_id}</div>
+        <div class="confirm-detail">Estimated Delivery: ${order.estimated_delivery}</div>
+        <div class="confirm-detail" style="margin-top:8px">Total Paid: ₹${order.total}</div>
+        <div class="confirm-detail" style="margin-top:4px">Payment: ${order.payment_method}</div>`;
+      openModal('confirmModal');
+      renderCart();
+    } catch { showToast('Order failed. Try again.', 'error'); }
+    btn.disabled = false; btn.textContent = 'Place Order →';
+  }
+
+  // ── Lab Booking ──
+  function openLabBooking(testId) {
+    const test = allLabs.find(t => t.id === testId);
+    if (!test) return;
+    currentLabBooking = test;
+    document.getElementById('labModalName').textContent = test.name;
+    document.getElementById('labModalPrice').textContent = `₹${test.price} (${test.discount}% off · MRP ₹${test.mrp})`;
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('labDate').value = tomorrow.toISOString().split('T')[0];
+    document.getElementById('labDate').min = tomorrow.toISOString().split('T')[0];
+    openModal('labModal');
+  }
+
+  async function submitLabBooking() {
+    const name = document.getElementById('labPatientName').value.trim();
+    const phone = document.getElementById('labPhone').value.trim();
+    const age = document.getElementById('labAge').value;
+    const gender = document.getElementById('labGender').value;
+    const date = document.getElementById('labDate').value;
+    const address = document.getElementById('labAddress').value.trim();
+    if (!name || !phone || !age || !gender || !date || !address) {
+      showToast('Please fill all required fields', 'error'); return;
+    }
+    const btn = document.querySelector('#labModal .submit-btn');
+    btn.disabled = true; btn.textContent = 'Booking...';
+    try {
+      const booking = await fetch(API + '/api/labs/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          test_id: currentLabBooking.id,
+          patient_name: name, patient_age: parseInt(age),
+          patient_gender: gender, date, address, phone
+        })
+      }).then(r => r.json());
+      closeModal('labModal');
+      document.getElementById('confirmContent').innerHTML = `
+        <div class="confirm-icon">🔬</div>
+        <div class="confirm-title">Lab Test Booked!</div>
+        <div class="confirm-id">${booking.booking_id}</div>
+        <div class="confirm-detail">${booking.test.name}</div>
+        <div class="confirm-detail" style="margin-top:8px">📅 Date: ${booking.date}</div>
+        <div class="confirm-detail">🏠 Home Collection Scheduled</div>
+        <div class="confirm-detail" style="margin-top:4px">Our team will call you 30 mins before arrival.</div>`;
+      openModal('confirmModal');
+    } catch { showToast('Booking failed. Try again.', 'error'); }
+    btn.disabled = false; btn.textContent = 'Confirm Booking — Home Collection';
+  }
+
+  // ── Doctor Booking ──
+  function openDocBooking(docId) {
+    const doc = allDoctors.find(d => d.id === docId);
+    if (!doc) return;
+    currentDocBooking = doc;
+    document.getElementById('docModalName').textContent = `${doc.name} — ${doc.specialization}`;
+    document.getElementById('docModalFee').textContent = `Consultation Fee: ₹${doc.fee} | ${doc.hospital}`;
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('docDate').value = tomorrow.toISOString().split('T')[0];
+    document.getElementById('docDate').min = tomorrow.toISOString().split('T')[0];
+    openModal('docModal');
+  }
+
+  async function submitDocBooking() {
+    const name = document.getElementById('docPatientName').value.trim();
+    const phone = document.getElementById('docPhone').value.trim();
+    const age = document.getElementById('docAge').value;
+    const gender = document.getElementById('docGender').value;
+    const date = document.getElementById('docDate').value;
+    const slot = document.getElementById('docSlot').value;
+    const symptoms = document.getElementById('docSymptoms').value.trim();
+    if (!name || !phone || !age || !gender || !date) {
+      showToast('Please fill all required fields', 'error'); return;
+    }
+    const btn = document.querySelector('#docModal .submit-btn');
+    btn.disabled = true; btn.textContent = 'Booking...';
+    try {
+      const booking = await fetch(API + '/api/doctors/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          doctor_id: currentDocBooking.id,
+          patient_name: name, patient_age: parseInt(age),
+          patient_gender: gender, date, slot, phone, symptoms
+        })
+      }).then(r => r.json());
+      closeModal('docModal');
+      document.getElementById('confirmContent').innerHTML = `
+        <div class="confirm-icon">📹</div>
+        <div class="confirm-title">Consultation Booked!</div>
+        <div class="confirm-id">${booking.booking_id}</div>
+        <div class="confirm-detail">${booking.doctor.name} · ${booking.doctor.specialization}</div>
+        <div class="confirm-detail" style="margin-top:8px">📅 ${booking.date} at ${booking.slot}</div>
+        <div class="confirm-detail">💊 You'll receive a video call link via SMS</div>
+        <div class="confirm-detail" style="margin-top:4px">Fee: ₹${booking.doctor.fee}</div>`;
+      openModal('confirmModal');
+    } catch { showToast('Booking failed. Try again.', 'error'); }
+    btn.disabled = false; btn.textContent = '📹 Confirm Video Consultation';
+  }
+
+  // ── Global Search ──
+  function globalSearchHandler() {
+    const q = document.getElementById('globalSearch').value.trim();
+    const type = document.getElementById('searchType').value;
+    if (!q) return;
+    if (type === 'medicines') {
+      showSection('medicines');
+      setTimeout(() => {
+        document.getElementById('medSearchInput').value = q;
+        searchMedicines();
+      }, 150);
+    } else if (type === 'labs') {
+      showSection('labs');
+      setTimeout(() => {
+        document.getElementById('labSearchInput').value = q;
+        searchLabs();
+      }, 150);
+    } else {
+      showSection('doctors');
+      setTimeout(() => {
+        document.getElementById('docSearchInput').value = q;
+        searchDoctors();
+      }, 150);
+    }
+  }
+
+  document.getElementById('globalSearch').addEventListener('keydown', e => {
+    if (e.key === 'Enter') globalSearchHandler();
+  });
+  document.getElementById('medSearchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') searchMedicines();
+  });
+  document.getElementById('labSearchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') searchLabs();
+  });
+  document.getElementById('docSearchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') searchDoctors();
+  });
+
+  // ── Init ──
+  loadHome();
+</script>
+</body>
+</html>
